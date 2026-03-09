@@ -1,0 +1,136 @@
+package com.example.todoornottodo.ui.Screen
+
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.DateRange
+import androidx.compose.material3.*
+import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
+import androidx.navigation.NavHostController
+import com.example.todoornottodo.ViewModel.TaskViewModel
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun AddTaskScreen(
+    navController: NavHostController,
+    viewModel: TaskViewModel
+) {
+    var text by remember { mutableStateOf("") }
+    var date by remember { mutableStateOf("") } // pour afficher la date choisie
+
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(16.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Text(
+            text = "Ajouter une tâche",
+            style = MaterialTheme.typography.titleMedium
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Bouton pour choisir la date
+        DatePickerButton(
+            selectedDate = date,
+            onDateSelected = { date = it }
+        )
+
+        Spacer(modifier = Modifier.height(16.dp))
+
+        // Champ pour le nom de la tâche
+        TextField(
+            value = text,
+            onValueChange = { text = it },
+            label = { Text("Nom de la tâche") },
+            modifier = Modifier.fillMaxWidth()
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        // Bouton Ajouter
+        Button(
+            onClick = {
+                if (text.isNotBlank() && date.isNotBlank()) {
+                    val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+                    val timestamp = formatter.parse(date)?.time ?: System.currentTimeMillis()
+                    viewModel.addTask(text, timestamp)
+                    navController.popBackStack()
+                }
+            },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Ajouter")
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Bouton Annuler
+        Button(
+            onClick = { navController.popBackStack() },
+            modifier = Modifier.fillMaxWidth()
+        ) {
+            Text("Annuler")
+        }
+    }
+}
+
+@OptIn(ExperimentalMaterial3Api::class)
+@Composable
+fun DatePickerButton(
+    selectedDate: String,
+    onDateSelected: (String) -> Unit
+) {
+    var showDialog by remember { mutableStateOf(false) }
+
+    // State du DatePicker (créé une seule fois)
+    val datePickerState = rememberDatePickerState()
+
+    val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+
+    Button(
+        onClick = { showDialog = true },
+        modifier = Modifier.fillMaxWidth()
+    ) {
+        Icon(
+            imageVector = Icons.Default.DateRange,
+            contentDescription = "Choisir la date",
+            modifier = Modifier.size(24.dp)
+        )
+        Spacer(modifier = Modifier.width(8.dp))
+        Text(
+            if (selectedDate.isEmpty()) "Choisir une date" else selectedDate
+        )
+    }
+
+    if (showDialog) {
+        DatePickerDialog(
+            onDismissRequest = { showDialog = false },
+            confirmButton = {
+                Button(onClick = {
+                    datePickerState.selectedDateMillis?.let {
+                        onDateSelected(formatter.format(Date(it)))
+                    }
+                    showDialog = false
+                }) {
+                    Text("OK")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { showDialog = false }) {
+                    Text("Annuler")
+                }
+            }
+        ) {
+            DatePicker(state = datePickerState)
+        }
+    }
+}
