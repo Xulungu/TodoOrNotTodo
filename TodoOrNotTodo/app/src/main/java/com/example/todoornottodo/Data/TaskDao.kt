@@ -17,4 +17,7 @@ interface TaskDao {
 
     @Update
     suspend fun update(task: Task)
+
+    @Query("SELECT * FROM tasks WHERE isDone = 0 AND date < :now AND lateNotificationSent = 0")
+    suspend fun getLateTasks(now: Long): List<Task>
 }

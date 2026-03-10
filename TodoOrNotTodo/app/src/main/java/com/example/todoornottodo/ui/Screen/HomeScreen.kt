@@ -13,15 +13,16 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.todoornottodo.Data.Task
 import com.example.todoornottodo.ViewModel.TaskViewModel
 import com.example.todoornottodo.utils.SortType
-import com.example.todoornottodo.utils.sortTasks
-import java.util.*
-import com.example.todoornottodo.utils.FilterType
 import com.example.todoornottodo.utils.filterAndSortTasks
+import com.example.todoornottodo.utils.FilterType
+import com.example.todoornottodo.Effect.TaskEffect
+import com.example.todoornottodo.Effect.TaskEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -30,10 +31,11 @@ fun HomeScreen(
     tasks: List<Task>,
     viewModel: TaskViewModel
 ) {
-
     var sortType by remember { mutableStateOf(SortType.NAME_ASC) }
     var sortMenuExpanded by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf(FilterType.ALL) }
+
+    val context = LocalContext.current
 
     // Filtrage + tri délégué
     val sortedTasks = filterAndSortTasks(tasks, selectedFilter, sortType)
@@ -161,7 +163,8 @@ fun HomeScreen(
                         task = task,
                         viewModel = viewModel,
                         onViewDetail = { navController.navigate("detail/${task.id}") },
-                        onEditTask = { navController.navigate("edit/${task.id}") }
+                        onEditTask = { navController.navigate("edit/${task.id}") },
+                        context = context
                     )
                 }
             }
@@ -174,9 +177,12 @@ fun TaskRow(
     task: Task,
     viewModel: TaskViewModel,
     onViewDetail: () -> Unit,
-    onEditTask: (Int) -> Unit
+    onEditTask: (Int) -> Unit,
+    context: android.content.Context
 ) {
     var expanded by remember { mutableStateOf(false) }
+
+    TaskEffect(task, context)
 
     Row(
         modifier = Modifier
@@ -188,8 +194,11 @@ fun TaskRow(
         Row(verticalAlignment = Alignment.CenterVertically) {
             Checkbox(
                 checked = task.isDone,
-                onCheckedChange = {
-                    viewModel.updateTask(task.copy(isDone = it), task.isDone)
+                enabled = !task.isDone,
+                onCheckedChange = { checked ->
+                    if (checked) {
+                        viewModel.updateTask(task.copy(isDone = true), task.isDone)
+                    }
                 }
             )
 
@@ -218,6 +227,13 @@ fun TaskRow(
                     onClick = {
                         expanded = false
                         onEditTask(task.id)
+                    }
+                )
+                DropdownMenuItem(
+                    text = { Text("Supprimer") },
+                    onClick = {
+                        expanded = false
+                        viewModel.deleteTask(task)
                     }
                 )
             }
