@@ -21,14 +21,15 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             emptyList()
         )
 
-    fun addTask(title: String, date: Long, repeatType: Periodicity) {
+    fun addTask(title: String, date: Long, repeatType: Periodicity, priority: Int) {
         viewModelScope.launch {
             dao.insert(
                 Task(
                     title = title,
                     date = date,
                     isDone = false,
-                    repeatType = repeatType
+                    repeatType = repeatType,
+                    priority = priority
                 )
             )
         }

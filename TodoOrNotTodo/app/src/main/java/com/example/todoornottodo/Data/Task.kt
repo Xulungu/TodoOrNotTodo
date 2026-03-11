@@ -12,5 +12,6 @@ data class Task(
     val date: Long,
     val isDone: Boolean,
     val lateNotificationSent: Boolean = false,
-    val repeatType: Periodicity
+    val repeatType: Periodicity,
+    val priority: Int = 0
 )

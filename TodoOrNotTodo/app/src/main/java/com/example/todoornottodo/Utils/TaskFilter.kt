@@ -17,18 +17,11 @@ fun isToday(timestamp: Long): Boolean {
             calTask.get(Calendar.DAY_OF_YEAR) == calToday.get(Calendar.DAY_OF_YEAR)
 }
 
-fun filterAndSortTasks(
-    tasks: List<Task>,
-    filterType: FilterType,
-    sortType: SortType
-): List<Task> {
-
-    val filteredTasks = when (filterType) {
+fun filterTasks(tasks: List<Task>, filterType: FilterType): List<Task> {
+    return when (filterType) {
         FilterType.LATE -> tasks.filter { !it.isDone && it.date < System.currentTimeMillis() && !isToday(it.date) }
         FilterType.DONE -> tasks.filter { it.isDone }
         FilterType.TODAY -> tasks.filter { !it.isDone && isToday(it.date) }
         FilterType.ALL -> tasks
     }
-
-    return sortTasks(filteredTasks, sortType)
 }

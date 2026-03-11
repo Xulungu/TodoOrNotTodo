@@ -64,6 +64,12 @@ fun TaskDetailScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+        Text(
+            text = "Priorité : ${task.priority}",
+            style = MaterialTheme.typography.bodyMedium
+        )
+
+        Spacer(modifier = Modifier.height(24.dp))
 
         Button(onClick = { navController.popBackStack() }) {
             Text("Retour")

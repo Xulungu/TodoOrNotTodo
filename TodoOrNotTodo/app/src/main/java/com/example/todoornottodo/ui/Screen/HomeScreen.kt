@@ -31,7 +31,7 @@ fun HomeScreen(
     tasks: List<Task>,
     viewModel: TaskViewModel
 ) {
-    var sortType by remember { mutableStateOf(SortType.NAME_ASC) }
+    var sortType by remember { mutableStateOf(SortType.PRIORITY) }
     var sortMenuExpanded by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf(FilterType.ALL) }
 
@@ -111,8 +111,7 @@ fun HomeScreen(
                     Button(onClick = { sortMenuExpanded = true }) {
                         Text(
                             when (sortType) {
-                                SortType.NAME_ASC -> "Nom A → Z"
-                                SortType.NAME_DESC -> "Nom Z → A"
+                                SortType.PRIORITY -> "Priorité"
                                 SortType.DONE_FIRST -> "Faites d'abord"
                                 SortType.TODO_FIRST -> "À faire d'abord"
                             }
@@ -124,28 +123,22 @@ fun HomeScreen(
                         onDismissRequest = { sortMenuExpanded = false }
                     ) {
                         DropdownMenuItem(
-                            text = { Text("Nom A → Z") },
+                            text = { Text("Priorité") },
                             onClick = {
-                                sortType = SortType.NAME_ASC
+                                sortType = SortType.PRIORITY
                                 sortMenuExpanded = false
                             }
                         )
+
                         DropdownMenuItem(
-                            text = { Text("Nom Z → A") },
-                            onClick = {
-                                sortType = SortType.NAME_DESC
-                                sortMenuExpanded = false
-                            }
-                        )
-                        DropdownMenuItem(
-                            text = { Text("Faites d'abord") },
+                            text = { Text("Faites") },
                             onClick = {
                                 sortType = SortType.DONE_FIRST
                                 sortMenuExpanded = false
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("À faire d'abord") },
+                            text = { Text("À faire") },
                             onClick = {
                                 sortType = SortType.TODO_FIRST
                                 sortMenuExpanded = false

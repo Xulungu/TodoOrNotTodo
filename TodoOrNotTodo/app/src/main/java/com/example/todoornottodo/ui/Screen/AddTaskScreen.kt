@@ -1,12 +1,14 @@
 package com.example.todoornottodo.ui.Screen
 
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.todoornottodo.utils.Periodicity
@@ -22,9 +24,10 @@ fun AddTaskScreen(
     viewModel: TaskViewModel
 ) {
     var text by remember { mutableStateOf("") }
-    var date by remember { mutableStateOf("") } // pour afficher la date choisie
+    var date by remember { mutableStateOf("") }
     var repeatType by remember { mutableStateOf(Periodicity.NONE) }
     var repeatMenuExpanded by remember { mutableStateOf(false) }
+    var taskPriority by remember { mutableStateOf("") }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -110,13 +113,24 @@ fun AddTaskScreen(
             }
         }
 
+        Spacer(modifier = Modifier.height(24.dp))
+
+        TextField(
+            value = taskPriority,
+            onValueChange = { taskPriority = it },
+            label = { Text("Priorité de la tâche") },
+            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            modifier = Modifier.fillMaxWidth()
+        )
+
         // Bouton Ajouter
         Button(
             onClick = {
                 if (text.isNotBlank() && date.isNotBlank()) {
                     val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
                     val timestamp = formatter.parse(date)?.time ?: System.currentTimeMillis()
-                    viewModel.addTask(text, timestamp, repeatType)
+                    val priority = taskPriority.toIntOrNull() ?: 0
+                    viewModel.addTask(text, timestamp, repeatType, priority)
                     navController.popBackStack()
                 }
             },
