@@ -5,6 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.todoornottodo.Data.AppDatabase
 import com.example.todoornottodo.Data.Task
+import com.example.todoornottodo.utils.Periodicity
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
@@ -20,13 +21,14 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
             emptyList()
         )
 
-    fun addTask(title: String, date: Long) {
+    fun addTask(title: String, date: Long, repeatType: Periodicity) {
         viewModelScope.launch {
             dao.insert(
                 Task(
                     title = title,
                     date = date,
-                    isDone = false
+                    isDone = false,
+                    repeatType = repeatType
                 )
             )
         }

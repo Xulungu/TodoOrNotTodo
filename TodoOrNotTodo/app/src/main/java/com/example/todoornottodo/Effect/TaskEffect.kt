@@ -13,15 +13,17 @@ fun TaskEffect(
     soundResId: Int = R.raw.task_done
 ) {
 
-    var hasPlayed by remember(task.id) { mutableStateOf(task.isDone) }
+    var lastState by remember(task.id) { mutableStateOf(task.isDone) }
 
     LaunchedEffect(task.isDone) {
-        if (!hasPlayed && task.isDone) {
+
+        if (!lastState && task.isDone) {
+
             val mediaPlayer = MediaPlayer.create(context, soundResId)
             mediaPlayer.start()
             mediaPlayer.setOnCompletionListener { it.release() }
-
-            hasPlayed = true
         }
+
+        lastState = task.isDone
     }
 }

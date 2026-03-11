@@ -18,6 +18,13 @@ interface TaskDao {
     @Update
     suspend fun update(task: Task)
 
-    @Query("SELECT * FROM tasks WHERE isDone = 0 AND date < :now AND lateNotificationSent = 0")
+
+    @Query("SELECT * FROM tasks WHERE repeatType != 'NONE'")
+    suspend fun getPeriodicTasks(): List<Task>
+
+    @Query("SELECT * FROM tasks")
+    suspend fun getAllTasksOnce(): List<Task>
+
+    @Query("SELECT * FROM tasks WHERE date < :now")
     suspend fun getLateTasks(now: Long): List<Task>
 }

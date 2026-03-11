@@ -9,6 +9,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import com.example.todoornottodo.utils.Periodicity
 import com.example.todoornottodo.ViewModel.TaskViewModel
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -22,7 +23,8 @@ fun AddTaskScreen(
 ) {
     var text by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") } // pour afficher la date choisie
-
+    var repeatType by remember { mutableStateOf(Periodicity.NONE) }
+    var repeatMenuExpanded by remember { mutableStateOf(false) }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -56,13 +58,65 @@ fun AddTaskScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
+
+        Box {
+            Button(onClick = { repeatMenuExpanded = true }) {
+                Text(
+                    when (repeatType) {
+                        Periodicity.NONE -> "Pas de répétition"
+                        Periodicity.DAILY ->  "Tous les jours"
+                        Periodicity.WEEKLY ->  "Toutes les semaines"
+                        Periodicity.MONTHLY ->  "Tous les mois"
+                    }
+                )
+            }
+
+            DropdownMenu(
+                expanded = repeatMenuExpanded,
+                onDismissRequest = { repeatMenuExpanded = false }
+            ) {
+
+                DropdownMenuItem(
+                    text = { Text("Pas de répétition") },
+                    onClick = {
+                        repeatType = Periodicity.NONE
+                        repeatMenuExpanded = false
+                    }
+                )
+
+                DropdownMenuItem(
+                    text = { Text("Tous les jours") },
+                    onClick = {
+                        repeatType = Periodicity.DAILY
+                        repeatMenuExpanded = false
+                    }
+                )
+
+                DropdownMenuItem(
+                    text = { Text("Toutes les semaines") },
+                    onClick = {
+                        repeatType = Periodicity.WEEKLY
+                        repeatMenuExpanded = false
+                    }
+                )
+
+                DropdownMenuItem(
+                    text = { Text("Tous les mois") },
+                    onClick = {
+                        repeatType = Periodicity.MONTHLY
+                        repeatMenuExpanded = false
+                    }
+                )
+            }
+        }
+
         // Bouton Ajouter
         Button(
             onClick = {
                 if (text.isNotBlank() && date.isNotBlank()) {
                     val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
                     val timestamp = formatter.parse(date)?.time ?: System.currentTimeMillis()
-                    viewModel.addTask(text, timestamp)
+                    viewModel.addTask(text, timestamp, repeatType)
                     navController.popBackStack()
                 }
             },

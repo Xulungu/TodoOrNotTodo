@@ -8,6 +8,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
 import com.example.todoornottodo.Data.Task
+import com.example.todoornottodo.utils.Periodicity
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -48,7 +49,21 @@ fun TaskDetailScreen(
             Text("La tâche n'est pas faîte", style = MaterialTheme.typography.bodyMedium)
         }
 
+        Spacer(modifier = Modifier.height(8.dp))
+        val repeatText = when (task.repeatType) {
+            Periodicity.NONE -> "Pas de répétition"
+            Periodicity.DAILY -> "Tous les jours"
+            Periodicity.WEEKLY -> "Toutes les semaines"
+            Periodicity.MONTHLY -> "Tous les mois"
+            else -> {}
+        }
+        Text(
+            text = "Répétition : $repeatText",
+            style = MaterialTheme.typography.bodyMedium
+        )
+
         Spacer(modifier = Modifier.height(24.dp))
+
 
         Button(onClick = { navController.popBackStack() }) {
             Text("Retour")

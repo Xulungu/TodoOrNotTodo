@@ -51,7 +51,7 @@ fun AppNavigation(viewModel: TaskViewModel) {
                 EditTaskScreen(
                     navController = navController,
                     viewModel = viewModel,
-                    task = it
+                    task = it,
                 )
             }
         }

@@ -12,7 +12,7 @@ import androidx.work.WorkManager
 import com.example.todoornottodo.Data.Task
 import com.example.todoornottodo.Navigation.AppNavigation
 import com.example.todoornottodo.ViewModel.TaskViewModel
-import com.example.todoornottodo.Worker.TaskLateWorker
+import com.example.todoornottodo.Worker.TaskSchedulerWorker
 import java.util.concurrent.TimeUnit
 
 class MainActivity : ComponentActivity() {
@@ -22,12 +22,13 @@ class MainActivity : ComponentActivity() {
 
         enableEdgeToEdge()
 
-        val request = PeriodicWorkRequestBuilder<TaskLateWorker>(
-            30, TimeUnit.MINUTES
+
+        val request = PeriodicWorkRequestBuilder<TaskSchedulerWorker>(
+            15, TimeUnit.MINUTES
         ).build()
 
         WorkManager.getInstance(this).enqueueUniquePeriodicWork(
-            "late_task_worker",
+            "task_scheduler",
             ExistingPeriodicWorkPolicy.UPDATE,
             request
         )
