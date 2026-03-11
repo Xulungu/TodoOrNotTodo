@@ -18,7 +18,6 @@ interface TaskDao {
     @Update
     suspend fun update(task: Task)
 
-
     @Query("SELECT * FROM tasks WHERE repeatType != 'NONE'")
     suspend fun getPeriodicTasks(): List<Task>
 

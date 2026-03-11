@@ -22,7 +22,6 @@ import com.example.todoornottodo.utils.SortType
 import com.example.todoornottodo.utils.filterAndSortTasks
 import com.example.todoornottodo.utils.FilterType
 import com.example.todoornottodo.Effect.TaskEffect
-import com.example.todoornottodo.Effect.TaskEffect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -34,13 +33,31 @@ fun HomeScreen(
     var sortType by remember { mutableStateOf(SortType.PRIORITY) }
     var sortMenuExpanded by remember { mutableStateOf(false) }
     var selectedFilter by remember { mutableStateOf(FilterType.ALL) }
+    var totalPoints by remember { mutableStateOf(0) }
 
     val context = LocalContext.current
 
-    // Filtrage + tri délégué
+    // 🔹 Rafraîchit les tâches périodiques à l'ouverture de l'app
+    LaunchedEffect(Unit) {
+        viewModel.refreshPeriodicTasks()
+    }
+
+    // 🔹 Charger les points depuis UserStats et mettre à jour à chaque changement de tâches
+    LaunchedEffect(tasks) {
+        totalPoints = viewModel.getTotalPoints()
+    }
+
     val sortedTasks = filterAndSortTasks(tasks, selectedFilter, sortType)
 
     Scaffold(
+        topBar = {
+            TopAppBar(
+                title = { Text("Todo Or Not Todo") },
+                actions = {
+                    Text(text = "⭐ $totalPoints", style = MaterialTheme.typography.titleMedium)
+                }
+            )
+        },
         bottomBar = {
             NavigationBar {
                 NavigationBarItem(
@@ -77,14 +94,6 @@ fun HomeScreen(
                 .padding(padding)
                 .padding(15.dp)
         ) {
-
-            Spacer(modifier = Modifier.height(25.dp))
-
-            Text(
-                text = "Todo Or Not Todo",
-                style = MaterialTheme.typography.headlineMedium
-            )
-
             Spacer(modifier = Modifier.height(16.dp))
 
             Button(
@@ -114,6 +123,7 @@ fun HomeScreen(
                                 SortType.PRIORITY -> "Priorité"
                                 SortType.DONE_FIRST -> "Faites d'abord"
                                 SortType.TODO_FIRST -> "À faire d'abord"
+                                else -> ""
                             }
                         )
                     }
@@ -129,16 +139,15 @@ fun HomeScreen(
                                 sortMenuExpanded = false
                             }
                         )
-
                         DropdownMenuItem(
-                            text = { Text("Faites") },
+                            text = { Text("Faites d'abord") },
                             onClick = {
                                 sortType = SortType.DONE_FIRST
                                 sortMenuExpanded = false
                             }
                         )
                         DropdownMenuItem(
-                            text = { Text("À faire") },
+                            text = { Text("À faire d'abord") },
                             onClick = {
                                 sortType = SortType.TODO_FIRST
                                 sortMenuExpanded = false
@@ -190,7 +199,7 @@ fun TaskRow(
                 enabled = !task.isDone,
                 onCheckedChange = { checked ->
                     if (checked) {
-                        viewModel.updateTask(task.copy(isDone = true), task.isDone)
+                        viewModel.updateTask(task, true)
                     }
                 }
             )

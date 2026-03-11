@@ -5,10 +5,11 @@ import androidx.room.Database
 import androidx.room.Room
 import androidx.room.RoomDatabase
 
-@Database(entities = [Task::class], version = 6, exportSchema = false)
+@Database(entities = [Task::class, UserStats::class], version = 10, exportSchema = false)
 abstract class AppDatabase : RoomDatabase() {
 
     abstract fun taskDao(): TaskDao
+    abstract fun userStatsDao(): UserStatsDao  // <-- ajouter le DAO
 
     companion object {
         @Volatile
@@ -17,10 +18,10 @@ abstract class AppDatabase : RoomDatabase() {
         fun getDatabase(context: Context): AppDatabase {
             return INSTANCE ?: synchronized(this) {
                 val instance = Room.databaseBuilder(
-                                context.applicationContext,
-                                AppDatabase::class.java,
-                                "todo_database"
-                            ).fallbackToDestructiveMigration(false)
+                    context.applicationContext,
+                    AppDatabase::class.java,
+                    "todo_database"
+                ).fallbackToDestructiveMigration()
                     .build()
                 INSTANCE = instance
                 instance

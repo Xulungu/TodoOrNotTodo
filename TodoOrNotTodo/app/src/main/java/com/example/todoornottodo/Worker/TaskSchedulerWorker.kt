@@ -9,7 +9,6 @@ import androidx.work.CoroutineWorker
 import androidx.work.WorkerParameters
 import com.example.todoornottodo.Data.AppDatabase
 import com.example.todoornottodo.Data.Task
-import com.example.todoornottodo.Data.TaskDao
 import com.example.todoornottodo.utils.Periodicity
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -26,9 +25,7 @@ class TaskSchedulerWorker(
     }
 
     override suspend fun doWork(): Result = withContext(Dispatchers.IO) {
-
         try {
-
             val db = AppDatabase.getDatabase(applicationContext)
             val dao = db.taskDao()
 
@@ -37,16 +34,15 @@ class TaskSchedulerWorker(
 
             tasks.forEach { task ->
 
-                if (!task.isDone) {
+                // Notification si tâche non faite et en retard
+                if (!task.isDone && task.date <= now) {
                     sendNotification(task.title)
                 }
 
+                // Mise à jour de la date pour les tâches périodiques
                 if (task.repeatType != Periodicity.NONE) {
-
-                    val nextDate = getNextOccurrence(task)
-
-                    if (nextDate != null) {
-
+                    val nextDate = calculateNextDate(task)
+                    if (nextDate != null && nextDate != task.date) {
                         dao.update(
                             task.copy(
                                 date = nextDate,
@@ -59,28 +55,22 @@ class TaskSchedulerWorker(
             }
 
             Result.success()
-
         } catch (e: Exception) {
-
             e.printStackTrace()
             Result.failure()
-
         }
     }
 
     private fun sendNotification(title: String) {
-
         val manager =
             applicationContext.getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-
             val channel = NotificationChannel(
                 CHANNEL_ID,
                 CHANNEL_NAME,
                 NotificationManager.IMPORTANCE_HIGH
             )
-
             manager.createNotificationChannel(channel)
         }
 
@@ -94,32 +84,33 @@ class TaskSchedulerWorker(
         manager.notify(System.currentTimeMillis().toInt(), notification)
     }
 
-    private fun getNextOccurrence(task: Task): Long? {
+    private fun calculateNextDate(task: Task): Long? {
+        if (task.repeatType == Periodicity.NONE) return null
 
-        var next = task.date
-        val now = System.currentTimeMillis()
+        val cal = Calendar.getInstance().apply { timeInMillis = task.date }
+        val now = Calendar.getInstance()
 
-        while (next <= now) {
-
-            next = when (task.repeatType) {
-
-                Periodicity.DAILY ->
-                    next + 24 * 60 * 60 * 1000
-
-                Periodicity.WEEKLY ->
-                    next + 7 * 24 * 60 * 60 * 1000
-
-                Periodicity.MONTHLY -> {
-                    val cal = Calendar.getInstance()
-                    cal.timeInMillis = next
-                    cal.add(Calendar.MONTH, 1)
-                    cal.timeInMillis
+        when (task.repeatType) {
+            Periodicity.DAILY -> {
+                while (cal.get(Calendar.YEAR) < now.get(Calendar.YEAR) ||
+                    cal.get(Calendar.DAY_OF_YEAR) <= now.get(Calendar.DAY_OF_YEAR)
+                ) {
+                    cal.add(Calendar.DAY_OF_YEAR, 1)
                 }
-
-                Periodicity.NONE -> return null
             }
+            Periodicity.WEEKLY -> {
+                while (cal.timeInMillis <= now.timeInMillis) {
+                    cal.add(Calendar.WEEK_OF_YEAR, 1)
+                }
+            }
+            Periodicity.MONTHLY -> {
+                while (cal.timeInMillis <= now.timeInMillis) {
+                    cal.add(Calendar.MONTH, 1)
+                }
+            }
+            else -> return null
         }
 
-        return next
+        return cal.timeInMillis
     }
 }

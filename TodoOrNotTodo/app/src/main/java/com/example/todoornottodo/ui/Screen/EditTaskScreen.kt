@@ -124,16 +124,8 @@ fun EditTaskScreen(
                 val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
                 val timestamp = formatter.parse(date)?.time ?: task.date
                 val priority = taskPriority.toIntOrNull() ?: 0
-
-                viewModel.updateTask(
-                    task.copy(
-                        title = title,
-                        date = timestamp,
-                        repeatType = repeatType,
-                        priority = priority
-                    ),
-                    task.isDone
-                )
+                val updatedTask = task.copy(title = title, date = timestamp, priority = taskPriority.toInt())
+                viewModel.updateTask(updatedTask, task.isDone)
 
                 navController.popBackStack()
             },

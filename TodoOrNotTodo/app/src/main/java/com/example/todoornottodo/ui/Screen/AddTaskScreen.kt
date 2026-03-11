@@ -28,6 +28,7 @@ fun AddTaskScreen(
     var repeatType by remember { mutableStateOf(Periodicity.NONE) }
     var repeatMenuExpanded by remember { mutableStateOf(false) }
     var taskPriority by remember { mutableStateOf("") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -35,23 +36,12 @@ fun AddTaskScreen(
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
-        Text(
-            text = "Ajouter une tâche",
-            style = MaterialTheme.typography.titleMedium
-        )
-
+        Text("Ajouter une tâche", style = MaterialTheme.typography.titleMedium)
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Bouton pour choisir la date
-        DatePickerButton(
-            selectedDate = date,
-            onDateSelected = { date = it }
-        )
-
+        DatePickerButton(selectedDate = date, onDateSelected = { date = it })
         Spacer(modifier = Modifier.height(16.dp))
 
-        // Champ pour le nom de la tâche
         TextField(
             value = text,
             onValueChange = { text = it },
@@ -61,15 +51,14 @@ fun AddTaskScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-
         Box {
             Button(onClick = { repeatMenuExpanded = true }) {
                 Text(
                     when (repeatType) {
                         Periodicity.NONE -> "Pas de répétition"
-                        Periodicity.DAILY ->  "Tous les jours"
-                        Periodicity.WEEKLY ->  "Toutes les semaines"
-                        Periodicity.MONTHLY ->  "Tous les mois"
+                        Periodicity.DAILY -> "Tous les jours"
+                        Periodicity.WEEKLY -> "Toutes les semaines"
+                        Periodicity.MONTHLY -> "Tous les mois"
                     }
                 )
             }
@@ -78,38 +67,22 @@ fun AddTaskScreen(
                 expanded = repeatMenuExpanded,
                 onDismissRequest = { repeatMenuExpanded = false }
             ) {
-
-                DropdownMenuItem(
-                    text = { Text("Pas de répétition") },
-                    onClick = {
-                        repeatType = Periodicity.NONE
-                        repeatMenuExpanded = false
-                    }
-                )
-
-                DropdownMenuItem(
-                    text = { Text("Tous les jours") },
-                    onClick = {
-                        repeatType = Periodicity.DAILY
-                        repeatMenuExpanded = false
-                    }
-                )
-
-                DropdownMenuItem(
-                    text = { Text("Toutes les semaines") },
-                    onClick = {
-                        repeatType = Periodicity.WEEKLY
-                        repeatMenuExpanded = false
-                    }
-                )
-
-                DropdownMenuItem(
-                    text = { Text("Tous les mois") },
-                    onClick = {
-                        repeatType = Periodicity.MONTHLY
-                        repeatMenuExpanded = false
-                    }
-                )
+                DropdownMenuItem(text = { Text("Pas de répétition") }, onClick = {
+                    repeatType = Periodicity.NONE
+                    repeatMenuExpanded = false
+                })
+                DropdownMenuItem(text = { Text("Tous les jours") }, onClick = {
+                    repeatType = Periodicity.DAILY
+                    repeatMenuExpanded = false
+                })
+                DropdownMenuItem(text = { Text("Toutes les semaines") }, onClick = {
+                    repeatType = Periodicity.WEEKLY
+                    repeatMenuExpanded = false
+                })
+                DropdownMenuItem(text = { Text("Tous les mois") }, onClick = {
+                    repeatType = Periodicity.MONTHLY
+                    repeatMenuExpanded = false
+                })
             }
         }
 
@@ -123,31 +96,27 @@ fun AddTaskScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
-        // Bouton Ajouter
+        Spacer(modifier = Modifier.height(24.dp))
+
         Button(
             onClick = {
                 if (text.isNotBlank() && date.isNotBlank()) {
                     val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
                     val timestamp = formatter.parse(date)?.time ?: System.currentTimeMillis()
-                    val priority = taskPriority.toIntOrNull() ?: 0
+                    val priority = taskPriority.toIntOrNull()?.coerceIn(1, 10) ?: 1
                     viewModel.addTask(text, timestamp, repeatType, priority)
                     navController.popBackStack()
                 }
             },
             modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Ajouter")
-        }
+        ) { Text("Ajouter") }
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // Bouton Annuler
         Button(
             onClick = { navController.popBackStack() },
             modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Annuler")
-        }
+        ) { Text("Annuler") }
     }
 }
 
@@ -158,25 +127,13 @@ fun DatePickerButton(
     onDateSelected: (String) -> Unit
 ) {
     var showDialog by remember { mutableStateOf(false) }
-
-    // State du DatePicker (créé une seule fois)
     val datePickerState = rememberDatePickerState()
-
     val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
 
-    Button(
-        onClick = { showDialog = true },
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Icon(
-            imageVector = Icons.Default.DateRange,
-            contentDescription = "Choisir la date",
-            modifier = Modifier.size(24.dp)
-        )
+    Button(onClick = { showDialog = true }, modifier = Modifier.fillMaxWidth()) {
+        Icon(Icons.Default.DateRange, contentDescription = "Choisir la date", modifier = Modifier.size(24.dp))
         Spacer(modifier = Modifier.width(8.dp))
-        Text(
-            if (selectedDate.isEmpty()) "Choisir une date" else selectedDate
-        )
+        Text(if (selectedDate.isEmpty()) "Choisir une date" else selectedDate)
     }
 
     if (showDialog) {
@@ -184,21 +141,13 @@ fun DatePickerButton(
             onDismissRequest = { showDialog = false },
             confirmButton = {
                 Button(onClick = {
-                    datePickerState.selectedDateMillis?.let {
-                        onDateSelected(formatter.format(Date(it)))
-                    }
+                    datePickerState.selectedDateMillis?.let { onDateSelected(formatter.format(Date(it))) }
                     showDialog = false
-                }) {
-                    Text("OK")
-                }
+                }) { Text("OK") }
             },
             dismissButton = {
-                Button(onClick = { showDialog = false }) {
-                    Text("Annuler")
-                }
+                Button(onClick = { showDialog = false }) { Text("Annuler") }
             }
-        ) {
-            DatePicker(state = datePickerState)
-        }
+        ) { DatePicker(state = datePickerState) }
     }
 }
