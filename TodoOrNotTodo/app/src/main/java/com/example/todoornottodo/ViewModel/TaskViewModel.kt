@@ -21,7 +21,7 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
     val tasks = taskDao.getAllTasks()
         .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun addTask(title: String, date: Long, repeatType: Periodicity, priority: Int) {
+    fun addTask(title: String, date: Long, repeatType: Periodicity, priority: Int, taskDescription: String, imageUri: String?) {
         viewModelScope.launch {
             val points = (priority.coerceAtMost(10) * 2 + 1)
             val task = Task(
@@ -30,7 +30,9 @@ class TaskViewModel(application: Application) : AndroidViewModel(application) {
                 isDone = false,
                 repeatType = repeatType,
                 priority = priority,
-                points = points
+                points = points,
+                taskDescription = taskDescription,
+                imageUri = imageUri
             )
             taskDao.insert(task)
         }

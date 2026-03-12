@@ -14,5 +14,7 @@ data class Task(
     val lateNotificationSent: Boolean = false,
     val repeatType: Periodicity,
     val priority: Int = 0,
-    val points: Int = 0
+    val points: Int = 0,
+    val taskDescription: String = "",
+    val imageUri: String? = null
 )
