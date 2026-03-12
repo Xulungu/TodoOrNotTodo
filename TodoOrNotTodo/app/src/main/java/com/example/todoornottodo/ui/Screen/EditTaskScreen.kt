@@ -1,5 +1,6 @@
 package com.example.todoornottodo.ui.Screen
 
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -10,6 +11,7 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
@@ -29,7 +31,10 @@ fun EditTaskScreen(
     task: Task
 ) {
 
+    val context = LocalContext.current
+
     var title by remember { mutableStateOf(task.title) }
+
     var date by remember {
         mutableStateOf(
             SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
@@ -46,21 +51,33 @@ fun EditTaskScreen(
         mutableStateOf(task.imageUri?.let { Uri.parse(it) })
     }
 
+    // Sélecteur d'image robuste
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        ActivityResultContracts.OpenDocument()
     ) { uri ->
-        imageUri = uri
+        uri?.let {
+
+            context.contentResolver.takePersistableUriPermission(
+                it,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+
+            imageUri = it
+        }
     }
 
     Column(
         modifier = Modifier
             .fillMaxSize()
             .padding(16.dp),
-        verticalArrangement = Arrangement.Center,
+        verticalArrangement = Arrangement.Top,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
 
-        Text("Modifier la tâche", style = MaterialTheme.typography.titleLarge)
+        Text(
+            "Modifier la tâche",
+            style = MaterialTheme.typography.titleLarge
+        )
 
         Spacer(modifier = Modifier.height(16.dp))
 
@@ -82,7 +99,7 @@ fun EditTaskScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // PERIODICITE
+        // MENU PERIODICITE
         Box {
 
             Button(
@@ -152,9 +169,9 @@ fun EditTaskScreen(
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        // BOUTON CHANGER IMAGE
+        // BOUTON CHOISIR IMAGE
         Button(
-            onClick = { launcher.launch("image/*") },
+            onClick = { launcher.launch(arrayOf("image/*")) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Modifier l'image")
@@ -174,10 +191,18 @@ fun EditTaskScreen(
                 contentScale = ContentScale.Crop
             )
 
+            Spacer(modifier = Modifier.height(8.dp))
+
+            // BOUTON SUPPRIMER IMAGE
+            Button(
+                onClick = { imageUri = null },
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Text("Supprimer l'image")
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
         }
-
-        Spacer(modifier = Modifier.height(24.dp))
 
         // BOUTON ENREGISTRER
         Button(
@@ -211,7 +236,6 @@ fun EditTaskScreen(
 
         Spacer(modifier = Modifier.height(8.dp))
 
-        // BOUTON ANNULER
         Button(
             onClick = { navController.popBackStack() },
             modifier = Modifier.fillMaxWidth()

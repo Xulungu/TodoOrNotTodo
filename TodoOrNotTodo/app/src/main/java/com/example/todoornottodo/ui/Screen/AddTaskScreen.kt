@@ -1,5 +1,6 @@
 package com.example.todoornottodo.ui.Screen
 
+import android.content.Intent
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -12,14 +13,15 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import coil.compose.AsyncImage
 import com.example.todoornottodo.ViewModel.TaskViewModel
 import com.example.todoornottodo.utils.Periodicity
 import java.text.SimpleDateFormat
 import java.util.*
-import coil.compose.AsyncImage
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -27,6 +29,8 @@ fun AddTaskScreen(
     navController: NavHostController,
     viewModel: TaskViewModel
 ) {
+
+    val context = LocalContext.current
 
     var text by remember { mutableStateOf("") }
     var date by remember { mutableStateOf("") }
@@ -36,10 +40,17 @@ fun AddTaskScreen(
     var taskDescription by remember { mutableStateOf("") }
     var imageUri by remember { mutableStateOf<Uri?>(null) }
 
+    // Launcher robuste avec persistance
     val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.GetContent()
+        ActivityResultContracts.OpenDocument()
     ) { uri ->
-        imageUri = uri
+        uri?.let {
+            context.contentResolver.takePersistableUriPermission(
+                it,
+                Intent.FLAG_GRANT_READ_URI_PERMISSION
+            )
+            imageUri = it
+        }
     }
 
     Column(
@@ -75,7 +86,6 @@ fun AddTaskScreen(
 
         // MENU PERIODICITE
         Box {
-
             Button(
                 onClick = { repeatMenuExpanded = true },
                 modifier = Modifier.fillMaxWidth()
@@ -94,7 +104,6 @@ fun AddTaskScreen(
                 expanded = repeatMenuExpanded,
                 onDismissRequest = { repeatMenuExpanded = false }
             ) {
-
                 DropdownMenuItem(
                     text = { Text("Pas de répétition") },
                     onClick = {
@@ -102,7 +111,6 @@ fun AddTaskScreen(
                         repeatMenuExpanded = false
                     }
                 )
-
                 DropdownMenuItem(
                     text = { Text("Tous les jours") },
                     onClick = {
@@ -110,7 +118,6 @@ fun AddTaskScreen(
                         repeatMenuExpanded = false
                     }
                 )
-
                 DropdownMenuItem(
                     text = { Text("Toutes les semaines") },
                     onClick = {
@@ -118,7 +125,6 @@ fun AddTaskScreen(
                         repeatMenuExpanded = false
                     }
                 )
-
                 DropdownMenuItem(
                     text = { Text("Tous les mois") },
                     onClick = {
@@ -150,8 +156,9 @@ fun AddTaskScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        // Bouton choisir image
         Button(
-            onClick = { launcher.launch("image/*") },
+            onClick = { launcher.launch(arrayOf("image/*")) },
             modifier = Modifier.fillMaxWidth()
         ) {
             Text("Ajouter une image")
@@ -159,9 +166,8 @@ fun AddTaskScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
-        // APERCU IMAGE
+        // Aperçu image
         imageUri?.let {
-
             AsyncImage(
                 model = it,
                 contentDescription = "Image sélectionnée",
@@ -170,23 +176,15 @@ fun AddTaskScreen(
                     .height(200.dp),
                 contentScale = ContentScale.Crop
             )
-
             Spacer(modifier = Modifier.height(16.dp))
         }
 
         Button(
             onClick = {
-
                 if (text.isNotBlank() && date.isNotBlank()) {
-
-                    val formatter =
-                        SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
-
-                    val timestamp =
-                        formatter.parse(date)?.time ?: System.currentTimeMillis()
-
-                    val priority =
-                        taskPriority.toIntOrNull()?.coerceIn(1, 10) ?: 1
+                    val formatter = SimpleDateFormat("dd-MM-yyyy", Locale.getDefault())
+                    val timestamp = formatter.parse(date)?.time ?: System.currentTimeMillis()
+                    val priority = taskPriority.toIntOrNull()?.coerceIn(1, 10) ?: 1
 
                     viewModel.addTask(
                         text,
@@ -214,16 +212,6 @@ fun AddTaskScreen(
             Text("Annuler")
         }
     }
-}
-
-@Composable
-fun AsyncImage(
-    model: Uri,
-    contentDescription: String,
-    modifier: Modifier,
-    contentScale: ContentScale
-) {
-    TODO("Not yet implemented")
 }
 
 @OptIn(ExperimentalMaterial3Api::class)
