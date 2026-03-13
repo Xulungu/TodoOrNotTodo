@@ -34,12 +34,10 @@ class TaskSchedulerWorker(
 
             tasks.forEach { task ->
 
-                // Notification si tâche non faite et en retard
                 if (!task.isDone && task.date <= now) {
                     sendNotification(task.title)
                 }
 
-                // Mise à jour de la date pour les tâches périodiques
                 if (task.repeatType != Periodicity.NONE) {
                     val nextDate = calculateNextDate(task)
                     if (nextDate != null && nextDate != task.date) {

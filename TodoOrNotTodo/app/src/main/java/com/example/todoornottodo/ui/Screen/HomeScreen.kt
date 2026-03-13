@@ -8,6 +8,8 @@ import androidx.compose.material.icons.filled.Check
 import androidx.compose.material.icons.filled.DateRange
 import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.MoreVert
+import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.ShoppingCart
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -55,6 +57,13 @@ fun HomeScreen(
                 title = { Text("Todo Or Not Todo") },
                 actions = {
                     Text(text = "⭐ $totalPoints", style = MaterialTheme.typography.titleMedium)
+                    Spacer(modifier = Modifier.width(12.dp))
+                    IconButton(onClick = { navController.navigate("shop") }) {
+                        Icon(Icons.Default.ShoppingCart, contentDescription = "Boutique")
+                    }
+                    IconButton(onClick = { navController.navigate("seetings") }) {
+                        Icon(Icons.Default.Settings, contentDescription = "Paramètres")
+                    }
                 }
             )
         },
@@ -184,8 +193,7 @@ fun TaskRow(
 ) {
     var expanded by remember { mutableStateOf(false) }
 
-    TaskEffect(task, context)
-
+    TaskEffect(task, context, viewModel)
     Row(
         modifier = Modifier
             .fillMaxWidth()

@@ -8,7 +8,9 @@ import com.example.todoornottodo.ViewModel.TaskViewModel
 import com.example.todoornottodo.ui.Screen.AddTaskScreen
 import com.example.todoornottodo.ui.Screen.EditTaskScreen
 import com.example.todoornottodo.ui.Screen.HomeScreen
+import com.example.todoornottodo.ui.Screen.ShopScreen
 import com.example.todoornottodo.ui.Screen.TaskDetailScreen
+import com.example.todoornottodo.ui.Screen.SettingsScreen
 
 @Composable
 fun AppNavigation(viewModel: TaskViewModel) {
@@ -54,6 +56,12 @@ fun AppNavigation(viewModel: TaskViewModel) {
                     task = it,
                 )
             }
+        }
+        composable("shop") {
+            ShopScreen(navController = navController, viewModel = viewModel)
+        }
+        composable("seetings"){
+            SettingsScreen(navController = navController, viewModel = viewModel)
         }
     }
 }
